@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PDF Songlist Viewer by Luckay27</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+</head>
+<body>
+
+    <div id="home-view" class="view active">
+        <header>
+            <h1>PDF Songlist Viewer by Luckay27</h1>
+        </header>
+        <button id="btn-new-setlist" class="btn-primary">+ BUAT SETLIST BARU</button>
+        
+        <div class="list-container">
+            <h3>SETLIST TERSIMPAN</h3>
+            <ul id="saved-setlists">
+                <li class="empty-state">Belum ada setlist.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="editor-view" class="view">
+        <header>
+            <button id="btn-back-home" class="btn-icon">❮ Back</button>
+            <h2 id="current-setlist-name">Nama Setlist</h2>
+            <button id="btn-play" class="btn-success">PLAY ❯</button>
+        </header>
+        
+        <div class="list-container">
+            <ul id="song-list">
+                </ul>
+        </div>
+        
+        <input type="file" id="file-importer" accept="application/pdf" style="display: none;">
+        <button id="btn-import-pdf" class="btn-primary">+ Import Song (PDF)</button>
+    </div>
+
+    <div id="performance-view" class="view">
+        
+        <div class="perf-controls">
+            <button id="btn-exit-play" class="btn-overlay">❮ Balik</button>
+            <button id="btn-toggle-list" class="btn-overlay">☰ Setlist</button>
+        </div>
+
+        <div id="pdf-container"></div>
+        
+        <div id="tap-zone-left" class="tap-zone"></div>
+        <div id="tap-zone-right" class="tap-zone"></div>
+
+        <div id="sidebar-setlist" class="sidebar">
+            <h3>Daftar Lagu</h3>
+            <ul id="sidebar-song-list"></ul>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

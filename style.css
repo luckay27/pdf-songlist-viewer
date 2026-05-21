@@ -1,0 +1,150 @@
+/* --- RESET & BASE --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #121212; /* Dark mode base */
+    color: #ffffff;
+    overflow: hidden; /* Mencegah body scroll, scroll diatur per view */
+}
+
+/* --- VIEW CONTROLLER --- */
+.view {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    padding: 20px;
+    flex-direction: column;
+}
+.view.active {
+    display: flex; /* Hanya view yang aktif yang dirender */
+}
+
+/* --- TYPOGRAPHY & BUTTONS --- */
+h1, h2, h3 { font-weight: 600; margin-bottom: 15px; }
+h3 { color: #888; font-size: 0.9rem; letter-spacing: 1px; margin-top: 20px;}
+
+button {
+    border: none;
+    padding: 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-primary { background-color: #333; color: white; width: 100%; }
+.btn-primary:active { background-color: #555; }
+.btn-success { background-color: #00c853; color: white; }
+.btn-icon { background: none; color: #aaa; padding: 10px 0; }
+
+/* --- PERFORMANCE VIEW BASE --- */
+#performance-view {
+    padding: 0; /* Hilangkan padding agar bar nempel ke ujung luar */
+    position: relative;
+    background-color: #121212;
+}
+
+/* --- Fixed Top Header Bar --- */
+.perf-controls {
+    width: 100%;
+    height: 60px;
+    background-color: #1a1a1a; /* Warna solid agar tidak transparan */
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+    z-index: 20;
+}
+
+.btn-overlay {
+    background-color: #333;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    font-size: 0.9rem;
+}
+.btn-overlay:active {
+    background-color: #555;
+}
+
+/* --- PDF Container di bawah Header --- */
+#pdf-container {
+    width: 100%;
+    height: calc(100vh - 60px); /* Tinggi layar dikurangi tinggi header bar */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #121212;
+}
+
+/* Canvas Hasil Render PDF */
+canvas {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* --- Invisible Tap Zones (Mulai di bawah Header Bar) --- */
+.tap-zone {
+    position: absolute;
+    top: 60px; /* Digeser ke bawah sejauh tinggi header */
+    width: 25%;
+    height: calc(100vh - 60px);
+    z-index: 10;
+}
+#tap-zone-left { left: 0; }
+#tap-zone-right { right: 0; }
+
+/* --- Sidebar Setlist Overlay --- */
+.sidebar {
+    position: absolute;
+    top: 60px; /* Laci menu muncul tepat di bawah header bar */
+    right: -300px;
+    width: 250px;
+    height: calc(100vh - 60px);
+    background-color: rgba(26, 26, 26, 0.98);
+    border-left: 1px solid #333;
+    z-index: 30;
+    transition: 0.3s ease-in-out;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+}
+.sidebar.open {
+    right: 0;
+}
+
+/* --- Kembalikan Styling List & Highlight Sidebar --- */
+.sidebar h3 { 
+    color: #fff; 
+    margin-bottom: 15px; 
+    padding-left: 10px; 
+}
+
+.sidebar ul { 
+    list-style: none; 
+    overflow-y: auto; 
+    padding-left: 10px; 
+}
+
+.sidebar li {
+    padding: 15px 10px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    color: #ccc;
+    font-size: 1rem;
+}
+
+.sidebar li.active-song { 
+    color: #00c853; /* Highlight Hijau Penanda Lagu Aktif */
+    font-weight: bold; 
+}
