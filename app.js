@@ -2,6 +2,27 @@ let currentView = 'home-view';
 let db;
 let currentSetlist = { id: null, name: '', songs: [] };
 
+// --- FITUR BARU: WAKE LOCK (Layar Anti-Mati) ---
+let wakeLock = null;
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock ACTIVE!');
+        }
+    } catch (err) {
+        console.log(`Wake Lock error: ${err.message}`);
+    }
+}
+function releaseWakeLock() {
+    if (wakeLock !== null) {
+        wakeLock.release().then(() => {
+            wakeLock = null;
+            console.log('Wake Lock INACTIVE');
+        });
+    }
+}
+
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
@@ -21,43 +42,41 @@ request.onupgradeneeded = (e) => {
 request.onsuccess = (e) => {
     db = e.target.result;
     renderHomeSetlists();
-    // Taruh history awal pas buka app
     history.replaceState({ view: 'home-view' }, '', '');
 };
 
-// --- VIEW & HISTORY CONTROLLER ---
 function switchView(viewName) {
     Object.values(views).forEach(view => view.classList.remove('active'));
     views[viewName].classList.add('active');
     currentView = viewName;
     document.getElementById('sidebar-setlist').classList.remove('open');
-    // Titip pesan ke History HP
     history.pushState({ view: viewName }, '', '');
+    
+    // Matikan Wake Lock kalau keluar dari area Panggung
+    if(viewName !== 'performance') releaseWakeLock();
 }
 
-// Bikin tombol back HP gak keluar dari aplikasi
 window.addEventListener('popstate', (e) => {
     if (e.state && e.state.view) {
         Object.values(views).forEach(view => view.classList.remove('active'));
         views[e.state.view].classList.add('active');
         currentView = e.state.view;
         document.getElementById('sidebar-setlist').classList.remove('open');
+        if(currentView !== 'performance') releaseWakeLock();
     }
 });
 
-// --- INIT SORTABLE (DRAG & DROP) ---
 const songListUl = document.getElementById('song-list');
 new Sortable(songListUl, {
     animation: 150,
     ghostClass: 'sortable-ghost',
+    handle: '.li-content', 
     onEnd: function (evt) {
-        // Geser posisi data lagu di dalam array setlist
         const movedItem = currentSetlist.songs.splice(evt.oldIndex, 1)[0];
         currentSetlist.songs.splice(evt.newIndex, 0, movedItem);
-        // Save otomatis ke DB
         const txSet = db.transaction('setlists', 'readwrite');
         txSet.objectStore('setlists').put(currentSetlist);
-        renderEditorSongList(); // Refresh nomor urut
+        renderEditorSongList();
     }
 });
 
@@ -70,26 +89,45 @@ function renderHomeSetlists() {
     getAll.onsuccess = () => {
         const setlists = getAll.result;
         if (setlists.length === 0) {
-            listContainer.innerHTML = '<li class="empty-state">Belum ada setlist.</li>';
+            listContainer.innerHTML = '<li class="empty-state">No saved setlists</li>';
             return;
         }
         setlists.forEach(set => {
             const li = document.createElement('li');
-            li.innerText = `📁 ${set.name} (${set.songs.length} Lagu)`;
-            li.style.cursor = 'pointer';
-            li.addEventListener('click', () => {
+            
+            // Nama Setlist (Bisa diklik)
+            const textSpan = document.createElement('span');
+            textSpan.className = 'li-content';
+            textSpan.innerText = `📁 ${set.name} (${set.songs.length} Songs)`;
+            textSpan.addEventListener('click', () => {
                 currentSetlist = set;
                 document.getElementById('current-setlist-name').innerText = set.name;
                 renderEditorSongList();
                 switchView('editor');
             });
+
+            // FITUR BARU: Tombol Hapus Setlist
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn-delete';
+            delBtn.innerText = '🗑️';
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Biar klik hapus nggak sengaja masuk ke editor
+                if(confirm(`Permanently delete "${set.name}"?`)) {
+                    const txDel = db.transaction('setlists', 'readwrite');
+                    txDel.objectStore('setlists').delete(set.id);
+                    renderHomeSetlists();
+                }
+            });
+
+            li.appendChild(textSpan);
+            li.appendChild(delBtn);
             listContainer.appendChild(li);
         });
     };
 }
 
 document.getElementById('btn-new-setlist').addEventListener('click', () => {
-    let setName = prompt("Masukkan Nama Setlist (Misal: Gigs TVRI):");
+    let setName = prompt("Enter Setlist Name (Ex: Saturday Night Gig):");
     if (setName) {
         currentSetlist = { id: Date.now().toString(), name: setName, songs: [] };
         const tx = db.transaction('setlists', 'readwrite');
@@ -114,45 +152,58 @@ function renderEditorSongList() {
     songListUl.innerHTML = '';
     currentSetlist.songs.forEach((song, index) => {
         const li = document.createElement('li');
-        li.innerText = `${index + 1}. ${song.name}`;
+        
+        // Judul Lagu
+        const textSpan = document.createElement('span');
+        textSpan.className = 'li-content';
+        textSpan.innerText = `${index + 1}. ${song.name}`;
+        
+        // FITUR BARU: Tombol Hapus Lagu dari Setlist
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn-delete';
+        delBtn.innerText = '❌';
+        delBtn.addEventListener('click', () => {
+            if(confirm(`Remove "${song.name}" from this setlist?`)) {
+                currentSetlist.songs.splice(index, 1);
+                const txSet = db.transaction('setlists', 'readwrite');
+                txSet.objectStore('setlists').put(currentSetlist);
+                renderEditorSongList();
+            }
+        });
+
+        li.appendChild(textSpan);
+        li.appendChild(delBtn);
         songListUl.appendChild(li);
     });
 }
 
-// --- HANDLE PDF & AUTO-DETECT TEKS ---
 document.getElementById('file-importer').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file && file.type === "application/pdf") {
-        
         const reader = new FileReader();
         reader.onload = async function(event) {
             const fileBuffer = event.target.result;
             const typedarray = new Uint8Array(fileBuffer);
             const pdfId = 'pdf_' + Date.now().toString(); 
-            
             let detectedName = file.name.replace('.pdf', '');
 
-            // PROSES AUTO-DETECT (Cari Do=...)
             try {
                 const pdfDoc = await pdfjsLib.getDocument(typedarray).promise;
                 const page1 = await pdfDoc.getPage(1);
                 const textContent = await page1.getTextContent();
                 const fullText = textContent.items.map(item => item.str).join(' ');
                 
-                // Regex nyari tulisan do= (spasi) nada
                 const doMatch = fullText.match(/do\s*=\s*([A-G][#b]?m?)/i);
                 if (doMatch) {
                     detectedName = `[${doMatch[1].toUpperCase()}] ${detectedName}`;
                 }
             } catch (err) {
-                console.log("Auto-detect dilewati", err);
+                console.log("Auto-detect skipped", err);
             }
 
-            // Simpan PDF mentah
             const txPdf = db.transaction('pdfs', 'readwrite');
             txPdf.objectStore('pdfs').put({ id: pdfId, buffer: fileBuffer });
 
-            // Simpan nama yang udah di auto-detect
             currentSetlist.songs.push({ id: pdfId, name: detectedName });
             const txSet = db.transaction('setlists', 'readwrite');
             txSet.objectStore('setlists').put(currentSetlist);
@@ -163,12 +214,12 @@ document.getElementById('file-importer').addEventListener('change', function(e) 
     }
 });
 
-// --- PERFORMANCE MODE LOGIC ---
 let currentSongIndex = 0;
 
 document.getElementById('btn-play').addEventListener('click', () => {
-    if (currentSetlist.songs.length === 0) return alert("Setlist kosong!");
+    if (currentSetlist.songs.length === 0) return alert("Setlist is empty!");
     switchView('performance');
+    requestWakeLock(); // PANGGIL WAKE LOCK SAAT MANGGUNG!
     currentSongIndex = 0; 
     renderSongInPerformance(currentSongIndex);
 });
@@ -177,7 +228,31 @@ document.getElementById('btn-exit-play').addEventListener('click', () => {
     switchView('editor');
 });
 
-// Tombol Darurat ke Home
+// --- FITUR BARU: TOMBOL INVERT PDF (DARK MODE) ---
+document.getElementById('btn-invert-pdf').addEventListener('click', () => {
+    const container = document.getElementById('pdf-container');
+    container.classList.toggle('dark-pdf');
+    
+    const btn = document.getElementById('btn-invert-pdf');
+    if (container.classList.contains('dark-pdf')) {
+        btn.innerText = "☀️ Normal";
+    } else {
+        btn.innerText = "🌙 Invert";
+    }
+});
+
+document.getElementById('btn-fullscreen').addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.log(`Fullscreen failed: ${err.message}`);
+        });
+        document.getElementById('btn-fullscreen').innerText = "📺 Exit Fullscreen";
+    } else {
+        document.exitFullscreen();
+        document.getElementById('btn-fullscreen').innerText = "📺 Fullscreen";
+    }
+});
+
 document.getElementById('btn-emergency-home').addEventListener('click', () => {
     renderHomeSetlists();
     switchView('home');

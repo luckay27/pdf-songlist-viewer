@@ -2,7 +2,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Inter', sans-serif; /* Font baru yang lebih clean */
+    font-family: 'Inter', sans-serif;
 }
 
 body {
@@ -39,11 +39,29 @@ button {
 
 .list-container { margin-top: 20px; overflow-y: auto; flex-grow: 1; }
 ul { list-style: none; }
-li { padding: 15px 0; border-bottom: 1px solid #333; }
+
+/* --- FITUR BARU: TOMBOL DELETE & LAYOUT LIST --- */
+li { 
+    padding: 15px 0; 
+    border-bottom: 1px solid #333; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+.li-content {
+    flex-grow: 1; 
+    cursor: pointer;
+}
+.btn-delete {
+    background: none; border: none; color: #ff4444; font-size: 1.2rem;
+    padding: 5px 10px; cursor: pointer; width: auto;
+}
+.btn-delete:active { color: #cc0000; }
 
 /* Drag & Drop Styles */
-#song-list li { cursor: grab; font-size: 1rem; display: flex; align-items: center;}
-#song-list li::before { content: "☰"; margin-right: 15px; color: #555; }
+#song-list li { cursor: grab; font-size: 1rem; }
+#song-list .li-content { display: flex; align-items: center; pointer-events: none; }
+#song-list .li-content::before { content: "☰"; margin-right: 15px; color: #555; pointer-events: auto; }
 .sortable-ghost { opacity: 0.4; background-color: #222; border-radius: 5px;}
 
 /* --- PERFORMANCE VIEW --- */
@@ -68,8 +86,8 @@ canvas { max-width: 100%; height: auto; display: block; margin-bottom: 10px; }
 /* TAP ZONES DIREVISI */
 .tap-zone {
     position: absolute; top: 60px; height: calc(100vh - 60px); z-index: 10;
-    width: 15%; /* Dirampingkan biar tengah layar leluasa */
-    touch-action: manipulation; /* Anti-zoom pas di tap brutal */
+    width: 15%; 
+    touch-action: manipulation; 
 }
 #tap-zone-left { left: 0; }
 #tap-zone-right { right: 0; }
@@ -84,5 +102,10 @@ canvas { max-width: 100%; height: auto; display: block; margin-bottom: 10px; }
 .sidebar.open { right: 0; }
 .sidebar h3 { color: #fff; margin-bottom: 15px; padding-left: 10px; }
 .sidebar ul { list-style: none; overflow-y: auto; padding-left: 10px; flex-grow: 1;}
-.sidebar li { padding: 15px 10px; border-bottom: 1px solid #333; cursor: pointer; color: #ccc; }
+.sidebar li { padding: 15px 10px; border-bottom: 1px solid #333; cursor: pointer; color: #ccc; justify-content: flex-start;}
 .sidebar li.active-song { color: #00c853; font-weight: bold; }
+
+/* --- FITUR BARU: INVERT PDF (DARK MODE) --- */
+#pdf-container.dark-pdf canvas {
+    filter: invert(1) hue-rotate(180deg);
+}
