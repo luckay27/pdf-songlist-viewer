@@ -24,9 +24,17 @@ body {
 .view {
     display: none;
     width: 100vw;
-    height: 100vh;
+    min-height: 100dvh;
+    height: 100dvh;
     padding: 20px;
     flex-direction: column;
+}
+
+body {
+    background-color: #121212;
+    color: #ffffff;
+    overflow: hidden;
+    overscroll-behavior: none;
 }
 
 .view.active {

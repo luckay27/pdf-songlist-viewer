@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initDB();
     setupGlobalListeners();
     setupSortable();
+
+    enableFullscreenOnFirstTap();
 });
 
 /* =========================
@@ -598,4 +600,22 @@ function escapeHtml(value) {
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
+}
+
+function enableFullscreenOnFirstTap() {
+    const enterFullscreen = async () => {
+        try {
+            if (!document.fullscreenElement) {
+                await document.documentElement.requestFullscreen();
+            }
+        } catch (error) {
+            console.warn('Fullscreen blocked:', error);
+        }
+
+        document.removeEventListener('click', enterFullscreen);
+        document.removeEventListener('touchstart', enterFullscreen);
+    };
+
+    document.addEventListener('click', enterFullscreen);
+    document.addEventListener('touchstart', enterFullscreen, { once: true });
 }
