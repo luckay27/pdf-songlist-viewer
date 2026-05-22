@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initDB();
     setupGlobalListeners();
     setupSortable();
+    setupFullscreenStateListener();
 });
 
 /* =========================
@@ -644,10 +645,12 @@ function toggleInvertPdf() {
 
 async function requestAppFullscreen() {
     const element = document.documentElement;
-    const btnMobileFullscreen = document.getElementById('btn-mobile-fullscreen');
 
     try {
-        if (document.fullscreenElement) return;
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            updateFullscreenButtonState();
+            return;
+        }
 
         if (element.requestFullscreen) {
             await element.requestFullscreen();
@@ -657,10 +660,7 @@ async function requestAppFullscreen() {
             await element.msRequestFullscreen();
         }
 
-        if (btnMobileFullscreen) {
-            btnMobileFullscreen.innerText = '✓ FULLSCREEN ACTIVE';
-            btnMobileFullscreen.classList.add('is-active');
-        }
+        updateFullscreenButtonState();
 
     } catch (error) {
         console.warn('Fullscreen failed:', error);
@@ -741,4 +741,23 @@ function escapeHtml(value) {
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
+}
+
+function setupFullscreenStateListener() {
+    document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
+}
+
+function updateFullscreenButtonState() {
+    const btnMobileFullscreen = document.getElementById('btn-mobile-fullscreen');
+
+    if (!btnMobileFullscreen) return;
+
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        btnMobileFullscreen.innerText = '✓ FULLSCREEN ACTIVE';
+        btnMobileFullscreen.classList.add('is-active');
+    } else {
+        btnMobileFullscreen.innerText = '⛶ FULLSCREEN MODE';
+        btnMobileFullscreen.classList.remove('is-active');
+    }
 }
