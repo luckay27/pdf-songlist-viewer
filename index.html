@@ -2,16 +2,21 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Songlist Viewer by Luckay27</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
 <body>
 
     <div id="home-view" class="view active">
         <header>
-            <h1>PDF Songlist Viewer by Luckay27</h1>
+            <h1>PDF Songlist Viewer</h1>
+            <h3>by Luckay27</h3>
         </header>
         <button id="btn-new-setlist" class="btn-primary">+ BUAT SETLIST BARU</button>
         
@@ -31,6 +36,7 @@
         </header>
         
         <div class="list-container">
+            <p style="color:#888; font-size:0.8rem; margin-bottom:10px;">💡 Tahan dan geser (drag) lagu untuk mengubah urutan</p>
             <ul id="song-list">
                 </ul>
         </div>
@@ -40,20 +46,17 @@
     </div>
 
     <div id="performance-view" class="view">
-        
         <div class="perf-controls">
             <button id="btn-exit-play" class="btn-overlay">❮ Balik</button>
             <button id="btn-toggle-list" class="btn-overlay">☰ Setlist</button>
         </div>
-
         <div id="pdf-container"></div>
-        
         <div id="tap-zone-left" class="tap-zone"></div>
         <div id="tap-zone-right" class="tap-zone"></div>
-
         <div id="sidebar-setlist" class="sidebar">
             <h3>Daftar Lagu</h3>
             <ul id="sidebar-song-list"></ul>
+            <button id="btn-emergency-home" class="btn-overlay" style="margin-top:auto; background-color:#880000; text-align:center;">🏠 Keluar ke Home</button>
         </div>
     </div>
 

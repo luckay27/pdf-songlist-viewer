@@ -1,18 +1,16 @@
-/* --- RESET & BASE --- */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', sans-serif; /* Font baru yang lebih clean */
 }
 
 body {
-    background-color: #121212; /* Dark mode base */
+    background-color: #121212;
     color: #ffffff;
-    overflow: hidden; /* Mencegah body scroll, scroll diatur per view */
+    overflow: hidden; 
 }
 
-/* --- VIEW CONTROLLER --- */
 .view {
     display: none;
     width: 100vw;
@@ -20,131 +18,71 @@ body {
     padding: 20px;
     flex-direction: column;
 }
-.view.active {
-    display: flex; /* Hanya view yang aktif yang dirender */
-}
+.view.active { display: flex; }
 
-/* --- TYPOGRAPHY & BUTTONS --- */
-h1, h2, h3 { font-weight: 600; margin-bottom: 15px; }
-h3 { color: #888; font-size: 0.9rem; letter-spacing: 1px; margin-top: 20px;}
+h1, h2, h3 { font-weight: 700; margin-bottom: 5px; }
+h3 { color: #888; font-size: 0.9rem; letter-spacing: 1px; margin-top: 15px;}
 
 button {
     border: none;
     padding: 15px;
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: 600;
     border-radius: 8px;
     cursor: pointer;
     transition: 0.2s;
 }
-.btn-primary { background-color: #333; color: white; width: 100%; }
+.btn-primary { background-color: #333; color: white; width: 100%; margin-top: 15px;}
 .btn-primary:active { background-color: #555; }
 .btn-success { background-color: #00c853; color: white; }
 .btn-icon { background: none; color: #aaa; padding: 10px 0; }
 
-/* --- PERFORMANCE VIEW BASE --- */
-#performance-view {
-    padding: 0; /* Hilangkan padding agar bar nempel ke ujung luar */
-    position: relative;
-    background-color: #121212;
-}
+.list-container { margin-top: 20px; overflow-y: auto; flex-grow: 1; }
+ul { list-style: none; }
+li { padding: 15px 0; border-bottom: 1px solid #333; }
 
-/* --- Fixed Top Header Bar --- */
+/* Drag & Drop Styles */
+#song-list li { cursor: grab; font-size: 1rem; display: flex; align-items: center;}
+#song-list li::before { content: "☰"; margin-right: 15px; color: #555; }
+.sortable-ghost { opacity: 0.4; background-color: #222; border-radius: 5px;}
+
+/* --- PERFORMANCE VIEW --- */
+#performance-view { padding: 0; position: relative; background-color: #121212; }
 .perf-controls {
-    width: 100%;
-    height: 60px;
-    background-color: #1a1a1a; /* Warna solid agar tidak transparan */
-    border-bottom: 1px solid #333;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 15px;
-    z-index: 20;
+    width: 100%; height: 60px; background-color: #1a1a1a;
+    border-bottom: 1px solid #333; display: flex;
+    justify-content: space-between; align-items: center; padding: 0 15px; z-index: 20;
 }
-
 .btn-overlay {
-    background-color: #333;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 6px;
-    border: 1px solid #444;
-    font-size: 0.9rem;
+    background-color: #333; color: white; padding: 10px 15px;
+    border-radius: 6px; border: 1px solid #444; font-size: 0.9rem; width: auto; margin-top: 0;
 }
-.btn-overlay:active {
-    background-color: #555;
-}
+.btn-overlay:active { background-color: #555; }
 
-/* --- PDF Container di bawah Header --- */
 #pdf-container {
-    width: 100%;
-    height: calc(100vh - 60px); /* Tinggi layar dikurangi tinggi header bar */
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #121212;
+    width: 100%; height: calc(100vh - 60px);
+    overflow-y: auto; display: flex; flex-direction: column; align-items: center;
 }
+canvas { max-width: 100%; height: auto; display: block; margin-bottom: 10px; }
 
-/* Canvas Hasil Render PDF */
-canvas {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin-bottom: 10px;
-}
-
-/* --- Invisible Tap Zones (Mulai di bawah Header Bar) --- */
+/* TAP ZONES DIREVISI */
 .tap-zone {
-    position: absolute;
-    top: 60px; /* Digeser ke bawah sejauh tinggi header */
-    width: 25%;
-    height: calc(100vh - 60px);
-    z-index: 10;
+    position: absolute; top: 60px; height: calc(100vh - 60px); z-index: 10;
+    width: 15%; /* Dirampingkan biar tengah layar leluasa */
+    touch-action: manipulation; /* Anti-zoom pas di tap brutal */
 }
 #tap-zone-left { left: 0; }
 #tap-zone-right { right: 0; }
 
-/* --- Sidebar Setlist Overlay --- */
 .sidebar {
-    position: absolute;
-    top: 60px; /* Laci menu muncul tepat di bawah header bar */
-    right: -300px;
-    width: 250px;
-    height: calc(100vh - 60px);
-    background-color: rgba(26, 26, 26, 0.98);
-    border-left: 1px solid #333;
-    z-index: 30;
-    transition: 0.3s ease-in-out;
-    padding: 20px 10px;
-    display: flex;
-    flex-direction: column;
+    position: absolute; top: 60px; right: -300px;
+    width: 250px; height: calc(100vh - 60px);
+    background-color: rgba(26, 26, 26, 0.98); border-left: 1px solid #333;
+    z-index: 30; transition: 0.3s ease-in-out; padding: 20px 10px;
+    display: flex; flex-direction: column;
 }
-.sidebar.open {
-    right: 0;
-}
-
-/* --- Kembalikan Styling List & Highlight Sidebar --- */
-.sidebar h3 { 
-    color: #fff; 
-    margin-bottom: 15px; 
-    padding-left: 10px; 
-}
-
-.sidebar ul { 
-    list-style: none; 
-    overflow-y: auto; 
-    padding-left: 10px; 
-}
-
-.sidebar li {
-    padding: 15px 10px;
-    border-bottom: 1px solid #333;
-    cursor: pointer;
-    color: #ccc;
-    font-size: 1rem;
-}
-
-.sidebar li.active-song { 
-    color: #00c853; /* Highlight Hijau Penanda Lagu Aktif */
-    font-weight: bold; 
-}
+.sidebar.open { right: 0; }
+.sidebar h3 { color: #fff; margin-bottom: 15px; padding-left: 10px; }
+.sidebar ul { list-style: none; overflow-y: auto; padding-left: 10px; flex-grow: 1;}
+.sidebar li { padding: 15px 10px; border-bottom: 1px solid #333; cursor: pointer; color: #ccc; }
+.sidebar li.active-song { color: #00c853; font-weight: bold; }
