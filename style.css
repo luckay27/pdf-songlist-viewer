@@ -109,8 +109,8 @@ body.is-mobile-or-tablet .btn-fullscreen-home {
     display: block;
 }
 
-if (btnMobileFullscreen) {
-    btnMobileFullscreen.style.display = 'none';
+.btn-fullscreen-home.is-active {
+    background-color: #00c853;
 }
 
 .btn-primary {
