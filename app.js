@@ -22,11 +22,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 ========================= */
 
 document.addEventListener('DOMContentLoaded', () => {
+    markDeviceType();
+
     initDB();
     setupGlobalListeners();
     setupSortable();
-
-    enableFullscreenOnFirstTap();
 });
 
 /* =========================
@@ -65,6 +65,10 @@ function saveCurrentSetlist() {
 
     const tx = db.transaction('setlists', 'readwrite');
     tx.objectStore('setlists').put(currentSetlist);
+
+    tx.onerror = () => {
+        console.error('Failed to save setlist:', tx.error);
+    };
 }
 
 function deleteSetlist(setlistId) {
@@ -75,6 +79,10 @@ function deleteSetlist(setlistId) {
 
     tx.oncomplete = () => {
         renderHomeSetlists();
+    };
+
+    tx.onerror = () => {
+        console.error('Failed to delete setlist:', tx.error);
     };
 }
 
@@ -94,61 +102,101 @@ function setupGlobalListeners() {
     const btnZoomOut = document.getElementById('btn-zoom-out');
     const btnFullscreen = document.getElementById('btn-fullscreen');
     const btnInvertPdf = document.getElementById('btn-invert-pdf');
+    const btnMobileFullscreen = document.getElementById('btn-mobile-fullscreen');
 
     const tapZoneRight = document.getElementById('tap-zone-right');
     const tapZoneLeft = document.getElementById('tap-zone-left');
     const fileImporter = document.getElementById('file-importer');
 
-    btnNewSetlist.addEventListener('click', createNewSetlist);
+    if (btnMobileFullscreen) {
+        btnMobileFullscreen.addEventListener('click', requestAppFullscreen);
+    }
 
-    btnImportPdf.addEventListener('click', () => {
-        fileImporter.click();
-    });
+    if (btnNewSetlist) {
+        btnNewSetlist.addEventListener('click', createNewSetlist);
+    }
 
-    btnBackHome.addEventListener('click', () => {
-        renderHomeSetlists();
-        switchView('home');
-    });
+    if (btnImportPdf && fileImporter) {
+        btnImportPdf.addEventListener('click', () => {
+            fileImporter.click();
+        });
+    }
 
-    btnPlay.addEventListener('click', startPerformance);
+    if (btnBackHome) {
+        btnBackHome.addEventListener('click', () => {
+            renderHomeSetlists();
+            switchView('home');
+        });
+    }
 
-    btnExitPlay.addEventListener('click', () => {
-        switchView('editor');
-    });
+    if (btnPlay) {
+        btnPlay.addEventListener('click', startPerformance);
+    }
 
-    btnEmergencyHome.addEventListener('click', () => {
-        renderHomeSetlists();
-        switchView('home');
-    });
+    if (btnExitPlay) {
+        btnExitPlay.addEventListener('click', () => {
+            switchView('editor');
+        });
+    }
 
-    btnToggleList.addEventListener('click', () => {
-        document.getElementById('sidebar-setlist').classList.toggle('open');
-    });
+    if (btnEmergencyHome) {
+        btnEmergencyHome.addEventListener('click', () => {
+            renderHomeSetlists();
+            switchView('home');
+        });
+    }
 
-    btnZoomIn.addEventListener('click', () => {
-        currentPdfZoom += 20;
-        applyZoom();
-    });
+    if (btnToggleList) {
+        btnToggleList.addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar-setlist');
 
-    btnZoomOut.addEventListener('click', () => {
-        if (currentPdfZoom > 60) {
-            currentPdfZoom -= 20;
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        });
+    }
+
+    if (btnZoomIn) {
+        btnZoomIn.addEventListener('click', () => {
+            currentPdfZoom += 20;
             applyZoom();
-        }
-    });
+        });
+    }
 
-    btnFullscreen.addEventListener('click', toggleFullscreen);
+    if (btnZoomOut) {
+        btnZoomOut.addEventListener('click', () => {
+            if (currentPdfZoom > 60) {
+                currentPdfZoom -= 20;
+                applyZoom();
+            }
+        });
+    }
 
-    btnInvertPdf.addEventListener('click', toggleInvertPdf);
+    if (btnFullscreen) {
+        btnFullscreen.addEventListener('click', toggleFullscreen);
+    }
 
-    tapZoneRight.addEventListener('click', goNext);
-    tapZoneLeft.addEventListener('click', goPrevious);
+    if (btnInvertPdf) {
+        btnInvertPdf.addEventListener('click', toggleInvertPdf);
+    }
 
-    fileImporter.addEventListener('change', importPdfFile);
+    if (tapZoneRight) {
+        tapZoneRight.addEventListener('click', goNext);
+    }
+
+    if (tapZoneLeft) {
+        tapZoneLeft.addEventListener('click', goPrevious);
+    }
+
+    if (fileImporter) {
+        fileImporter.addEventListener('change', importPdfFile);
+    }
 }
 
 function setupSortable() {
     const songList = document.getElementById('song-list');
+
+    if (!songList || typeof Sortable === 'undefined') return;
 
     sortableInstance = new Sortable(songList, {
         animation: 150,
@@ -156,8 +204,12 @@ function setupSortable() {
 
         onEnd: (event) => {
             if (event.oldIndex === event.newIndex) return;
+            if (!currentSetlist.songs || currentSetlist.songs.length === 0) return;
 
             const movedSong = currentSetlist.songs.splice(event.oldIndex, 1)[0];
+
+            if (!movedSong) return;
+
             currentSetlist.songs.splice(event.newIndex, 0, movedSong);
 
             saveCurrentSetlist();
@@ -209,6 +261,9 @@ function renderHomeSetlists() {
     if (!db) return;
 
     const list = document.getElementById('saved-setlists');
+
+    if (!list) return;
+
     list.innerHTML = '';
 
     const tx = db.transaction('setlists', 'readonly');
@@ -241,7 +296,12 @@ function renderHomeSetlists() {
 
             li.querySelector('.li-content').addEventListener('click', () => {
                 currentSetlist = setlist;
-                document.getElementById('current-setlist-name').innerText = setlist.name;
+
+                const title = document.getElementById('current-setlist-name');
+
+                if (title) {
+                    title.innerText = setlist.name;
+                }
 
                 renderEditorSongList();
                 switchView('editor');
@@ -277,7 +337,11 @@ function createNewSetlist() {
         songs: []
     };
 
-    document.getElementById('current-setlist-name').innerText = currentSetlist.name;
+    const title = document.getElementById('current-setlist-name');
+
+    if (title) {
+        title.innerText = currentSetlist.name;
+    }
 
     saveCurrentSetlist();
     renderEditorSongList();
@@ -290,6 +354,9 @@ function createNewSetlist() {
 
 function renderEditorSongList() {
     const songList = document.getElementById('song-list');
+
+    if (!songList) return;
+
     songList.innerHTML = '';
 
     if (!currentSetlist.songs || currentSetlist.songs.length === 0) {
@@ -330,7 +397,11 @@ function importPdfFile(event) {
 
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
+    const isPdf =
+        file.type === 'application/pdf' ||
+        file.name.toLowerCase().endsWith('.pdf');
+
+    if (!isPdf) {
         alert('Please import PDF file only.');
         event.target.value = '';
         return;
@@ -342,11 +413,17 @@ function importPdfFile(event) {
         return;
     }
 
+    if (!db) {
+        alert('Database is not ready. Please refresh the page.');
+        event.target.value = '';
+        return;
+    }
+
     const reader = new FileReader();
 
     reader.onload = (readerEvent) => {
         const buffer = readerEvent.target.result;
-        const pdfId = `pdf_${Date.now()}`;
+        const pdfId = `pdf_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
         const tx = db.transaction('pdfs', 'readwrite');
 
@@ -400,6 +477,7 @@ function startPerformance() {
 }
 
 async function renderSongInPerformance(index) {
+    if (!db) return;
     if (!currentSetlist.songs[index]) return;
 
     currentPdfZoom = 100;
@@ -418,6 +496,8 @@ async function renderSongInPerformance(index) {
         }
 
         const container = document.getElementById('pdf-container');
+
+        if (!container) return;
 
         try {
             container.innerHTML = `
@@ -470,6 +550,9 @@ async function renderSongInPerformance(index) {
 
 function renderSidebarMenu() {
     const sidebarList = document.getElementById('sidebar-song-list');
+
+    if (!sidebarList) return;
+
     sidebarList.innerHTML = '';
 
     currentSetlist.songs.forEach((song, index) => {
@@ -498,6 +581,8 @@ function renderSidebarMenu() {
 function goNext() {
     const container = document.getElementById('pdf-container');
 
+    if (!container || currentView !== 'performance') return;
+
     const isAtBottom =
         container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
 
@@ -515,6 +600,8 @@ function goNext() {
 
 function goPrevious() {
     const container = document.getElementById('pdf-container');
+
+    if (!container || currentView !== 'performance') return;
 
     const isAtTop = container.scrollTop <= 10;
 
@@ -546,6 +633,8 @@ function toggleInvertPdf() {
     const container = document.getElementById('pdf-container');
     const button = document.getElementById('btn-invert-pdf');
 
+    if (!container || !button) return;
+
     container.classList.toggle('dark-pdf');
 
     button.innerText = container.classList.contains('dark-pdf')
@@ -553,13 +642,42 @@ function toggleInvertPdf() {
         : '🌙 Invert';
 }
 
+async function requestAppFullscreen() {
+    const element = document.documentElement;
+
+    try {
+        if (document.fullscreenElement) return;
+
+        if (element.requestFullscreen) {
+            await element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+            await element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) {
+            await element.msRequestFullscreen();
+        }
+    } catch (error) {
+        console.warn('Fullscreen failed:', error);
+        alert('Fullscreen tidak bisa otomatis di browser ini. Coba buka dari Add to Home Screen.');
+    }
+}
+
+async function exitAppFullscreen() {
+    try {
+        if (document.exitFullscreen) {
+            await document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+        }
+    } catch (error) {
+        console.warn('Exit fullscreen failed:', error);
+    }
+}
+
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch((error) => {
-            console.error('Fullscreen error:', error);
-        });
+        requestAppFullscreen();
     } else {
-        document.exitFullscreen();
+        exitAppFullscreen();
     }
 }
 
@@ -590,6 +708,22 @@ function releaseWakeLock() {
 }
 
 /* =========================
+   DEVICE
+========================= */
+
+function markDeviceType() {
+    const isMobileOrTablet =
+        window.innerWidth <= 1366 &&
+        navigator.maxTouchPoints > 0;
+
+    if (isMobileOrTablet) {
+        document.body.classList.add('is-mobile-or-tablet');
+    } else {
+        document.body.classList.remove('is-mobile-or-tablet');
+    }
+}
+
+/* =========================
    HELPER
 ========================= */
 
@@ -600,22 +734,4 @@ function escapeHtml(value) {
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
-}
-
-function enableFullscreenOnFirstTap() {
-    const enterFullscreen = async () => {
-        try {
-            if (!document.fullscreenElement) {
-                await document.documentElement.requestFullscreen();
-            }
-        } catch (error) {
-            console.warn('Fullscreen blocked:', error);
-        }
-
-        document.removeEventListener('click', enterFullscreen);
-        document.removeEventListener('touchstart', enterFullscreen);
-    };
-
-    document.addEventListener('click', enterFullscreen);
-    document.addEventListener('touchstart', enterFullscreen, { once: true });
 }

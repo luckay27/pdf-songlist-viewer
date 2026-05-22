@@ -91,6 +91,24 @@ button:active {
     transform: scale(0.98);
 }
 
+.btn-fullscreen-home {
+    display: none;
+    width: 100%;
+    margin-top: 22px;
+    margin-bottom: 5px;
+    padding: 15px;
+    background-color: #1f6feb;
+    color: #ffffff;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* Muncul hanya untuk HP / tablet */
+body.is-mobile-or-tablet .btn-fullscreen-home {
+    display: block;
+}
+
 .btn-primary {
     width: 100%;
     margin-top: 15px;
