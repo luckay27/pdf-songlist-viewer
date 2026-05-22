@@ -2,24 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+    <meta 
+        name="viewport" 
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
     <title>PDF Songlist Viewer by Luckay27</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <link 
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" 
+        rel="stylesheet"
+    >
+
     <link rel="stylesheet" href="style.css">
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
+
 <body>
 
+    <!-- HOME VIEW -->
     <div id="home-view" class="view active">
-        <header>
+        <header class="app-header vertical-header">
             <h1>PDF Songlist Viewer</h1>
             <h3>by Luckay27</h3>
         </header>
-        <button id="btn-new-setlist" class="btn-primary">+ NEW SETLIST</button>
-        
+
+        <button id="btn-new-setlist" class="btn-primary">
+            + NEW SETLIST
+        </button>
+
         <div class="list-container">
             <h3>Saved Setlist</h3>
             <ul id="saved-setlists">
@@ -28,39 +42,91 @@
         </div>
     </div>
 
+    <!-- EDITOR VIEW -->
     <div id="editor-view" class="view">
-        <header>
-            <button id="btn-back-home" class="btn-icon">❮ Back</button>
-            <h2 id="current-setlist-name">Setlist Name</h2>
-            <button id="btn-play" class="btn-success">PLAY ❯</button>
+        <header class="app-header">
+            <button id="btn-back-home" class="btn-icon">
+                ❮ Back
+            </button>
+
+            <h2 id="current-setlist-name">
+                Setlist Name
+            </h2>
+
+            <button id="btn-play" class="btn-success">
+                PLAY ❯
+            </button>
         </header>
-        
+
         <div class="list-container">
-            <p style="color:#888; font-size:0.8rem; margin-bottom:10px;">💡 Hold and drag songs to change the order</p>
+            <p class="hint-text">
+                💡 Hold and drag songs to change the order
+            </p>
+
             <ul id="song-list">
-                </ul>
+                <li class="empty-state">No songs yet.</li>
+            </ul>
         </div>
-        
-        <input type="file" id="file-importer" accept="application/pdf" style="display: none;">
-        <button id="btn-import-pdf" class="btn-primary">+ Import Song (PDF)</button>
+
+        <input 
+            type="file" 
+            id="file-importer" 
+            accept="application/pdf" 
+            hidden
+        >
+
+        <button id="btn-import-pdf" class="btn-primary">
+            + Import Song (PDF)
+        </button>
     </div>
 
+    <!-- PERFORMANCE VIEW -->
     <div id="performance-view" class="view">
         <div class="perf-controls">
-            <button id="btn-exit-play" class="btn-overlay">❮ Back</button>
-            
-            <button id="btn-invert-pdf" class="btn-overlay" style="background-color: #2b2b2b;">🌙 Invert</button>
-            
-            <button id="btn-fullscreen" class="btn-overlay" style="background-color: #444;">📺 Fullscreen</button>
-            <button id="btn-toggle-list" class="btn-overlay">☰ Setlist</button>
+            <button id="btn-exit-play" class="btn-overlay">
+                ❮
+            </button>
+
+            <div class="perf-control-group">
+                <button id="btn-zoom-out" class="btn-overlay">
+                    🔍-
+                </button>
+
+                <button id="btn-zoom-in" class="btn-overlay">
+                    🔍+
+                </button>
+
+                <button id="btn-fullscreen" class="btn-overlay">
+                    📺 Full
+                </button>
+
+                <button id="btn-invert-pdf" class="btn-overlay">
+                    🌙 Invert
+                </button>
+            </div>
+
+            <button id="btn-toggle-list" class="btn-overlay">
+                ☰
+            </button>
         </div>
-        <div id="pdf-container"></div>
+
+        <div id="pdf-container">
+            <div class="pdf-empty-state">
+                No PDF loaded.
+            </div>
+        </div>
+
         <div id="tap-zone-left" class="tap-zone"></div>
         <div id="tap-zone-right" class="tap-zone"></div>
+
         <div id="sidebar-setlist" class="sidebar">
-            <h3>Song List</h3>
+            <h3>Daftar Lagu</h3>
+
             <ul id="sidebar-song-list"></ul>
-            <button id="btn-emergency-home" class="btn-overlay" style="margin-top:auto; background-color:#880000; text-align:center;">🏠 Home</button>
+
+            <button id="btn-emergency-home" class="btn-overlay btn-danger">
+                🏠 Keluar ke Home
+            </button>
         </div>
     </div>
 
