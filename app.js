@@ -644,6 +644,7 @@ function toggleInvertPdf() {
 
 async function requestAppFullscreen() {
     const element = document.documentElement;
+    const btnMobileFullscreen = document.getElementById('btn-mobile-fullscreen');
 
     try {
         if (document.fullscreenElement) return;
@@ -655,6 +656,12 @@ async function requestAppFullscreen() {
         } else if (element.msRequestFullscreen) {
             await element.msRequestFullscreen();
         }
+
+        if (btnMobileFullscreen) {
+            btnMobileFullscreen.innerText = '✓ FULLSCREEN ACTIVE';
+            btnMobileFullscreen.classList.add('is-active');
+        }
+
     } catch (error) {
         console.warn('Fullscreen failed:', error);
         alert('Fullscreen tidak bisa otomatis di browser ini. Coba buka dari Add to Home Screen.');

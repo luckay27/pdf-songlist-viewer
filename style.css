@@ -109,6 +109,10 @@ body.is-mobile-or-tablet .btn-fullscreen-home {
     display: block;
 }
 
+if (btnMobileFullscreen) {
+    btnMobileFullscreen.style.display = 'none';
+}
+
 .btn-primary {
     width: 100%;
     margin-top: 15px;
