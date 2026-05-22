@@ -141,6 +141,11 @@ li {
     word-break: break-word;
 }
 
+.btn-import-inline {
+    margin-top: 18px;
+    margin-bottom: 30px;
+}
+
 .btn-delete {
     width: auto;
     padding: 5px 10px;

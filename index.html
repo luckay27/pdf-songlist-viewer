@@ -44,41 +44,41 @@
 
     <!-- EDITOR VIEW -->
     <div id="editor-view" class="view">
-        <header class="app-header">
-            <button id="btn-back-home" class="btn-icon">
-                ❮ Back
-            </button>
+    <header class="app-header">
+        <button id="btn-back-home" class="btn-icon">
+            ❮ Back
+        </button>
 
-            <h2 id="current-setlist-name">
-                Setlist Name
-            </h2>
+        <h2 id="current-setlist-name">
+            Setlist Name
+        </h2>
 
-            <button id="btn-play" class="btn-success">
-                PLAY ❯
-            </button>
-        </header>
+        <button id="btn-play" class="btn-success">
+            PLAY ❯
+        </button>
+    </header>
 
-        <div class="list-container">
-            <p class="hint-text">
-                💡 Hold and drag songs to change the order
-            </p>
+    <div class="list-container">
+        <p class="hint-text">
+            💡 Hold and drag songs to change the order
+        </p>
 
-            <ul id="song-list">
-                <li class="empty-state">No songs yet.</li>
-            </ul>
-        </div>
+        <ul id="song-list">
+            <li class="empty-state">No songs yet.</li>
+        </ul>
 
         <input 
             type="file" 
             id="file-importer" 
-            accept="application/pdf" 
+            accept=".pdf,application/pdf" 
             hidden
         >
 
-        <button id="btn-import-pdf" class="btn-primary">
+        <button id="btn-import-pdf" class="btn-primary btn-import-inline">
             + Import Song (PDF)
         </button>
     </div>
+</div>
 
     <!-- PERFORMANCE VIEW -->
     <div id="performance-view" class="view">
